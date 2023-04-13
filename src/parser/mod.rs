@@ -54,8 +54,13 @@ pub fn parse_with<S: AsRef<str>>(
     // Normalize the number and extract country code.
     number = helper::country_code(database, country, number)?;
 
+    let country_code = number.prefix.as_ref().unwrap().parse::<u16>()?;
+    let country_metadata = database
+        .by_code(&country_code)
+        .and_then(|m| m.into_iter().next());
+
     // Extract carrier and strip national prefix if present.
-    if let Some(meta) = country.and_then(|c| database.by_id(c.as_ref())) {
+    if let Some(meta) = country_metadata {
         let mut potential = helper::national_number(meta, number.clone());
 
         // Strip national prefix if present.

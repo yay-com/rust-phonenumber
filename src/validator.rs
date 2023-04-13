@@ -368,5 +368,21 @@ mod test {
         assert!(!validator::is_valid(
             &parser::parse(None, "+800 123456789").unwrap()
         ));
+
+        assert!(validator::is_valid(
+            &parser::parse(Some(country::GB), "07912345678").unwrap()
+        ));
+
+        assert!(validator::is_valid(
+            &parser::parse(None, "+390635511397").unwrap()
+        ));
+
+        assert!(validator::is_valid(
+            &parser::parse(Some(country::GB), "+390635511397").unwrap()
+        ));
+
+        assert!(validator::is_valid(
+            &parser::parse(Some(country::GB), "00390635511397").unwrap()
+        ));
     }
 }
