@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-GIT_REF=95dd52a6176b881a14bcad96bce279debf6871f3
+GIT_REF=ef09e5787cb0fda3eee1f4aee7d5e147690484b7
 TMP_CLONE_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_CLONE_DIR"' EXIT
 
