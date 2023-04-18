@@ -378,4 +378,16 @@ mod test {
                 .to_string()
         );
     }
+
+    #[test]
+    fn general() {
+        assert_eq!(
+            "+78123369721",
+            parser::parse(Some(country::GB), "+78123369721")
+                .unwrap()
+                .format()
+                .mode(Mode::E164)
+                .to_string()
+        );
+    }
 }

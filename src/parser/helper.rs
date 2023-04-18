@@ -271,12 +271,6 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
     let parsing = if let Some(re) = meta.national_prefix_for_parsing.as_ref() {
         re
     } else {
-        if let Some(prefix) = meta.national_prefix.as_ref() {
-            if number.national.starts_with(prefix) {
-                number.national = trim(number.national, prefix.len());
-            }
-        }
-
         return number;
     };
 

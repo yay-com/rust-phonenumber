@@ -20,6 +20,7 @@ use crate::extension::Extension;
 use crate::metadata::{Database, DATABASE};
 use crate::national_number::NationalNumber;
 use crate::phone_number::{PhoneNumber, Type};
+use crate::validator::number_type;
 use crate::validator::{self, Validation};
 
 use nom::{branch::alt, IResult};
@@ -66,7 +67,10 @@ pub fn parse_with<S: AsRef<str>>(
         // Strip national prefix if present.
         if let Some(prefix) = meta.national_prefix.as_ref() {
             if potential.national.starts_with(prefix) {
-                potential.national = helper::trim(potential.national, prefix.len());
+                let potential_national = helper::trim(potential.national.clone(), prefix.len());
+                if number_type(meta, &potential_national) != Type::Unknown {
+                    potential.national = potential_national;
+                }
             }
         }
 
@@ -202,11 +206,11 @@ mod test {
         let number = PhoneNumber {
             code: country::Code {
                 value: 64,
-                source: country::Source::Number,
+                source: country::Source::Default,
             },
 
             national: NationalNumber {
-                value: 64123456,
+                value: 33316005,
                 zeros: 0,
             },
 
@@ -216,7 +220,7 @@ mod test {
 
         assert_eq!(
             number,
-            parser::parse(Some(country::NZ), "64(0)64123456").unwrap()
+            parser::parse(Some(country::NZ), "033316005").unwrap()
         );
 
         assert_eq!(
