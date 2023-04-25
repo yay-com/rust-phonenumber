@@ -20,6 +20,7 @@ use crate::extension::Extension;
 use crate::metadata::{Database, DATABASE};
 use crate::national_number::NationalNumber;
 use crate::phone_number::{PhoneNumber, Type};
+use crate::validator::number_meta;
 use crate::validator::number_type;
 use crate::validator::{self, Validation};
 
@@ -56,9 +57,7 @@ pub fn parse_with<S: AsRef<str>>(
     number = helper::country_code(database, country, number)?;
 
     let country_code = number.prefix.as_ref().unwrap().parse::<u16>()?;
-    let country_metadata = database
-        .by_code(&country_code)
-        .and_then(|m| m.into_iter().next());
+    let country_metadata = number_meta(database, country_code, &number.national);
 
     // Extract carrier and strip national prefix if present.
     if let Some(meta) = country_metadata {
@@ -293,6 +292,58 @@ mod test {
                 carrier: Some("12".into()),
             },
             parser::parse(Some(country::BR), "012 3121286979").unwrap()
+        );
+
+        assert_eq!(
+            PhoneNumber {
+                code: country::Code {
+                    value: 44,
+                    source: country::Source::Default,
+                },
+
+                national: NationalNumber {
+                    value: 1534745903,
+                    zeros: 0,
+                },
+
+                extension: None,
+                carrier: None,
+            },
+            parser::parse(Some(country::GB), "01534745903").unwrap()
+        );
+
+        assert_eq!(
+            Some(country::JE),
+            parser::parse(Some(country::GB), "01534745903")
+                .unwrap()
+                .country()
+                .id()
+        );
+
+        assert_eq!(
+            Some(country::JE),
+            parser::parse(Some(country::GB), "07797762257")
+                .unwrap()
+                .country()
+                .id()
+        );
+
+        assert_eq!(
+            PhoneNumber {
+                code: country::Code {
+                    value: 39,
+                    source: country::Source::Plus,
+                },
+
+                national: NationalNumber {
+                    value: 635511397,
+                    zeros: 1,
+                },
+
+                extension: None,
+                carrier: None,
+            },
+            parser::parse(Some(country::GB), "+390635511397").unwrap()
         );
     }
 

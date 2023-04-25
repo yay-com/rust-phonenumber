@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use either::*;
 use std::fmt;
 use std::ops::Deref;
 use std::str::FromStr;
@@ -26,6 +25,7 @@ use crate::metadata::{Database, Metadata, DATABASE};
 use crate::national_number::NationalNumber;
 use crate::parser;
 use crate::validator;
+use crate::validator::number_meta;
 
 /// A phone number.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
@@ -206,10 +206,7 @@ impl PhoneNumber {
     /// Get the metadata that applies to this phone number from the given
     /// database.
     pub fn metadata<'a>(&self, database: &'a Database) -> Option<&'a Metadata> {
-        match validator::source_for(database, self.code.value(), &self.national.to_string())? {
-            Left(region) => database.by_id(region.as_ref()),
-            Right(code) => database.by_code(&code).and_then(|m| m.into_iter().next()),
-        }
+        number_meta(database, self.code.value(), &self.national.to_string())
     }
 
     /// Check if the phone number is valid.
