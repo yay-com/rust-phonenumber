@@ -159,6 +159,19 @@ pub fn number_meta<'a>(database: &'a Database, code: u16, national: &str) -> Opt
                     return database.by_id(region.as_ref());
                 }
             }
+
+            if let Some(prefix) = meta.national_prefix.as_ref() {
+                if national.starts_with(prefix) {
+                    let potential_national =
+                        helper::trim(std::borrow::Cow::Borrowed(national), prefix.len());
+                    if let Some(index) = pattern.find(&potential_national) {
+                        if index.start() == 0 {
+                            let region = region.parse::<crate::country::Id>().ok()?;
+                            return database.by_id(region.as_ref());
+                        }
+                    }
+                }
+            }
         } else if number_type(meta, national) != Type::Unknown {
             let region = region.parse::<crate::country::Id>().ok()?;
             return database.by_id(region.as_ref());
@@ -438,6 +451,10 @@ mod test {
 
         assert!(validator::is_valid(
             &parser::parse(Some(country::GB), "07797762257").unwrap()
+        ));
+
+        assert!(validator::is_valid(
+            &parser::parse(Some(country::GB), "01624686801").unwrap()
         ));
     }
 }

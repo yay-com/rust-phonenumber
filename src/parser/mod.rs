@@ -331,6 +331,32 @@ mod test {
         assert_eq!(
             PhoneNumber {
                 code: country::Code {
+                    value: 44,
+                    source: country::Source::Default,
+                },
+
+                national: NationalNumber {
+                    value: 1624686801,
+                    zeros: 0,
+                },
+
+                extension: None,
+                carrier: None,
+            },
+            parser::parse(Some(country::GB), "01624686801").unwrap()
+        );
+
+        assert_eq!(
+            Some(country::IM),
+            parser::parse(Some(country::GB), "01624686801")
+                .unwrap()
+                .country()
+                .id()
+        );
+
+        assert_eq!(
+            PhoneNumber {
+                code: country::Code {
                     value: 39,
                     source: country::Source::Plus,
                 },
