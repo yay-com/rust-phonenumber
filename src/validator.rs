@@ -454,7 +454,7 @@ mod test {
         ));
 
         assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "01624686801").unwrap()
+            &parser::parse(Some(country::GB), "+21625518349").unwrap()
         ));
     }
 }
