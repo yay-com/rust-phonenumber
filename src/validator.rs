@@ -456,5 +456,13 @@ mod test {
         assert!(validator::is_valid(
             &parser::parse(Some(country::GB), "+21625518349").unwrap()
         ));
+
+        assert!(validator::is_valid(
+            &parser::parse(None, "+61494391247").unwrap()
+        ));
+
+        assert!(validator::is_valid(
+            &parser::parse(Some(country::AU), "+61494391247").unwrap()
+        ));
     }
 }
