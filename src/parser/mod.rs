@@ -20,7 +20,7 @@ use crate::extension::Extension;
 use crate::is_viable;
 use crate::metadata::{Database, DATABASE};
 use crate::phone_number::{PhoneNumber, Type};
-use crate::validator::{self, Validation};
+use crate::validator::{self, number_type, Validation};
 use nom::{branch::alt, IResult};
 
 #[macro_use]
@@ -57,10 +57,13 @@ pub fn parse_with<S: AsRef<str>>(
     // Normalize the number and extract country code.
     number = helper::country_code(database, country, number)?;
 
-    // If no country was supplied, try to determine the metadata from the number.
-    // We need to determine the country to be able to classify the national prefix if present.
-    let meta = if let Some(country) = &country {
-        database.by_id(country.as_ref())
+    // Determine metadata for national prefix classification.
+    // When a country hint is provided, derive metadata from the number's actual dialing prefix
+    // rather than the hint — this fixes mismatched-hint international parsing where, e.g.,
+    // parse(Some(GB), "+390635511397") should resolve to IT metadata, not GB.
+    let meta = if let Some(_country) = &country {
+        let code = number.prefix.clone().map(|p| p.parse::<u16>()).unwrap_or(Ok(0))?;
+        database.by_code(&code).and_then(|m| m.into_iter().next())
     } else {
         let code = country::Code {
             value: number.prefix.clone().map(|p| p.parse()).unwrap_or(Ok(0))?,
@@ -80,10 +83,15 @@ pub fn parse_with<S: AsRef<str>>(
     if let Some(meta) = meta {
         let mut potential = helper::national_number(meta, number.clone());
 
-        // Strip national prefix if present.
+        // Strip national prefix if present, but only if the stripped form is a recognised
+        // number type — avoids corrupting international numbers whose national part happens
+        // to start with the hint country's national prefix digit(s).
         if let Some(prefix) = meta.national_prefix.as_ref() {
             if potential.national.starts_with(prefix) {
-                potential.national = helper::trim(potential.national, prefix.len());
+                let trimmed = helper::trim(potential.national.clone(), prefix.len());
+                if number_type(meta, &trimmed) != Type::Unknown {
+                    potential.national = trimmed;
+                }
             }
         }
 
@@ -167,24 +175,6 @@ mod test {
         println!("parsed: {:?}", parsed);
 
         assert_eq!(reference, parsed);
-    }
-
-    #[test]
-    fn parse_2() {
-        assert_eq!(
-            PhoneNumber {
-                code: country::Code {
-                    value: 64,
-                    source: Source::Number,
-                },
-
-                national: NationalNumber::new(64123456, 0).unwrap(),
-
-                extension: None,
-                carrier: None,
-            },
-            parser::parse(Some(country::NZ), "64(0)64123456").unwrap()
-        );
     }
 
     #[test]

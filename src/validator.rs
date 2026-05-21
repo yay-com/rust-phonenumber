@@ -336,6 +336,14 @@ mod test {
     #[case(None, "+800 123456789", false)]
     // Case for https://github.com/whisperfish/rust-phonenumber/issues/31
     // #[case(None, "+97233142764978", false)]
+    // Mismatched country-hint cases: number must be resolved by its actual dialing prefix
+    #[case(country::GB, "07912345678", true)]
+    #[case(None, "+390635511397", true)]
+    #[case(country::GB, "+390635511397", true)]
+    #[case(country::GB, "00390635511397", true)]
+    #[case(country::NZ, "033316005", true)]
+    #[case(country::GB, "+78123369721", true)]
+    #[case(country::US, "+441483399915", true)]
     fn phone_numbers(
         #[case] country: impl Into<Option<country::Id>>,
         #[case] number: &'static str,
