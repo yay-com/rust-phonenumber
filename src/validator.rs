@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use either::*;
+
 use crate::consts;
+use crate::country;
 use crate::metadata::{Database, Metadata, DATABASE};
 use crate::parser;
-use crate::parser::helper;
 use crate::parser::helper::Number as ParseNumber;
 use crate::phone_number::{PhoneNumber, Type};
 
@@ -93,9 +95,13 @@ pub fn is_valid(number: &PhoneNumber) -> bool {
 
 /// Check if the phone number is valid with the given `Database`.
 pub fn is_valid_with(database: &Database, number: &PhoneNumber) -> bool {
+    let code = number.country().code();
     let national = number.national.to_string();
-    number
-        .metadata(database)
+    source_for(database, code, &national)
+        .and_then(|meta| match meta {
+            Left(region) => database.by_id(region.as_ref()),
+            Right(code) => database.by_code(&code).and_then(|m| m.into_iter().next()),
+        })
         .map(|meta| number_type(meta, &national) != Type::Unknown)
         .unwrap_or(false)
 }
@@ -136,14 +142,19 @@ pub fn length(meta: &Metadata, number: &ParseNumber, kind: Type) -> Validation {
     }
 }
 
-pub fn number_meta<'a>(database: &'a Database, code: u16, national: &str) -> Option<&'a Metadata> {
+/// Find the metadata source.
+pub fn source_for(
+    database: &Database,
+    code: u16,
+    national: &str,
+) -> Option<Either<country::Id, u16>> {
     let regions = database.region(&code)?;
     if regions.len() == 1 {
         return if regions[0] == "001" {
-            Some(database.by_code(&code).and_then(|m| m.into_iter().next())?)
+            Some(Right(code))
         } else {
-            match regions[0].parse::<crate::country::Id>() {
-                Ok(value) => Some(database.by_id(value.as_ref())?),
+            match regions[0].parse() {
+                Ok(value) => Some(Left(value)),
                 Err(_) => None,
             }
         };
@@ -155,75 +166,16 @@ pub fn number_meta<'a>(database: &'a Database, code: u16, national: &str) -> Opt
         if let Some(pattern) = meta.leading_digits.as_ref() {
             if let Some(index) = pattern.find(national) {
                 if index.start() == 0 {
-                    let region = region.parse::<crate::country::Id>().ok()?;
-                    return database.by_id(region.as_ref());
-                }
-            }
-
-            if let Some(prefix) = meta.national_prefix.as_ref() {
-                if national.starts_with(prefix) {
-                    let potential_national =
-                        helper::trim(std::borrow::Cow::Borrowed(national), prefix.len());
-                    if let Some(index) = pattern.find(&potential_national) {
-                        if index.start() == 0 {
-                            let region = region.parse::<crate::country::Id>().ok()?;
-                            return database.by_id(region.as_ref());
-                        }
-                    }
+                    return Some(Left(region.parse().unwrap()));
                 }
             }
         } else if number_type(meta, national) != Type::Unknown {
-            let region = region.parse::<crate::country::Id>().ok()?;
-            return database.by_id(region.as_ref());
-        } else if let Some(prefix) = meta.national_prefix.as_ref() {
-            if national.starts_with(prefix) {
-                let potential_national =
-                    helper::trim(std::borrow::Cow::Borrowed(national), prefix.len());
-                if number_type(meta, &potential_national) != Type::Unknown {
-                    let region = region.parse::<crate::country::Id>().ok()?;
-                    return database.by_id(region.as_ref());
-                }
-            }
+            return Some(Left(region.parse().unwrap()));
         }
     }
 
     None
 }
-
-/// Find the metadata source.
-// pub fn source_for(
-//     database: &Database,
-//     code: u16,
-//     national: &str,
-// ) -> Option<Either<country::Id, u16>> {
-//     let regions = database.region(&code)?;
-//     if regions.len() == 1 {
-//         return if regions[0] == "001" {
-//             Some(Right(code))
-//         } else {
-//             match regions[0].parse() {
-//                 Ok(value) => Some(Left(value)),
-//                 Err(_) => None,
-//             }
-//         };
-//     }
-
-//     for region in regions {
-//         let meta = database.by_id(region).unwrap();
-
-//         if let Some(pattern) = meta.leading_digits.as_ref() {
-//             if let Some(index) = pattern.find(national) {
-//                 if index.start() == 0 {
-//                     return Some(Left(region.parse().unwrap()));
-//                 }
-//             }
-//         } else if number_type(meta, national) != Type::Unknown {
-//             return Some(Left(region.parse().unwrap()));
-//         }
-//     }
-
-//     None
-// }
 
 pub fn number_type(meta: &Metadata, value: &str) -> Type {
     if !meta.descriptors.general.is_match(value) {
@@ -415,54 +367,6 @@ mod test {
 
         assert!(!validator::is_valid(
             &parser::parse(None, "+800 123456789").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "07912345678").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(None, "+390635511397").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "+390635511397").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "00390635511397").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::NZ), "033316005").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "+78123369721").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::US), "+441483399915").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "01534745903").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "07797762257").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "+21625518349").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(None, "+61494391247").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::AU), "+61494391247").unwrap()
         ));
     }
 }

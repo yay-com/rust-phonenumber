@@ -1,4 +1,4 @@
-# Copyright (C) 2017 The Libphonenumber Authors
+# Copyright (C) 2011 The Libphonenumber Authors
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Source: www.arcep.fr
+# Generated from:
+# http://en.wikipedia.org/wiki/+372 [428435162]
 
-50840|Globaltel
-50842|Orange
-50843|Diabolocom
-50844|Globaltel
-50850|Keyyo
-50855|SPM Telecom
-50856|Kav El International
+37232|Rakvere
+37233|Kohtla-Järve
+37235|Narva/Sillamäe
+37238|Paide
+37243|Viljandi
+37244|Pärnu
+37245|Kuressaare
+37246|Kärdla
+37247|Haapsalu
+37248|Rapla
+3726|Tallinn/Harju County
+37273|Tartu
+37274|Tartu
+37275|Tartu
+37276|Valga
+37277|Jõgeva
+37278|Võru
+37279|Põlva
