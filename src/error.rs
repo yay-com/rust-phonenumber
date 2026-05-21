@@ -49,6 +49,8 @@ pub enum Metadata {
 
 /// Parsing errors.
 #[derive(Error, Clone, Debug)]
+// This module is used in build.rs, and only some public items are used there.
+#[allow(dead_code)]
 pub enum Parse {
     /// This generally indicates the string passed in had less than 3 digits in
     /// it.
@@ -91,7 +93,7 @@ pub enum Parse {
 pub enum LoadMetadata {
     /// Parsing XML failed, the XML is malformed.
     #[error("Malformed Metadata XML: {0}")]
-    Xml(#[from] xml::Error),
+    Xml(#[from] quick_xml::Error),
 
     /// Parsing UTF-8 string from XML failed.
     #[error("Non UTF-8 string in Metadata XML: {0}")]

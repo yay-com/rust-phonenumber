@@ -98,7 +98,7 @@ pub fn format_with<'d, 'n>(
 }
 
 impl<'n, 'd, 'f> fmt::Display for Formatter<'n, 'd, 'f> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let db = self.database.unwrap_or(&DATABASE);
 
         // If the country code is invalid, return an error.
@@ -247,9 +247,9 @@ fn replace(
                     .get(1)
                     .unwrap()
                     .as_str();
-                let format = transform.replace(*consts::NP, meta.national_prefix().unwrap_or(""));
-                let format = format.replace(*consts::FG, &format!("${}", first));
-                let format = format.replace(*consts::CC, carrier.unwrap_or(""));
+                let format = transform.replace(consts::NP, meta.national_prefix().unwrap_or(""));
+                let format = format.replace(consts::FG, &format!("${}", first));
+                let format = format.replace(consts::CC, carrier.unwrap_or(""));
 
                 consts::FIRST_GROUP.replace(formatter.format(), &*format)
             } else {
@@ -264,6 +264,45 @@ mod test {
     use crate::country;
     use crate::formatter::Mode;
     use crate::parser;
+
+    #[test]
+    fn fr_leading_zero() {
+        assert_eq!(
+            "06 31 96 65 43",
+            parser::parse(Some(country::FR), "+330631966543")
+                .unwrap()
+                .format()
+                .mode(Mode::National)
+                .to_string()
+        );
+
+        assert_eq!(
+            "+33 6 31 96 65 43",
+            parser::parse(Some(country::FR), "+330631966543")
+                .unwrap()
+                .format()
+                .mode(Mode::International)
+                .to_string()
+        );
+
+        assert_eq!(
+            "+33631966543",
+            parser::parse(Some(country::FR), "+330631966543")
+                .unwrap()
+                .format()
+                .mode(Mode::E164)
+                .to_string()
+        );
+
+        assert_eq!(
+            "tel:+33-6-31-96-65-43",
+            parser::parse(Some(country::FR), "+330631966543")
+                .unwrap()
+                .format()
+                .mode(Mode::Rfc3966)
+                .to_string()
+        );
+    }
 
     #[test]
     fn us() {

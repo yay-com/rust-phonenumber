@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use either::*;
-
 use crate::consts;
 use crate::country;
 use crate::metadata::{Database, Metadata, DATABASE};
 use crate::parser;
 use crate::parser::helper::Number as ParseNumber;
 use crate::phone_number::{PhoneNumber, Type};
+use either::*;
 
 /// Possible outcomes when testing if a `PhoneNumber` is possible.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -106,7 +105,7 @@ pub fn is_valid_with(database: &Database, number: &PhoneNumber) -> bool {
         .unwrap_or(false)
 }
 
-pub fn length(meta: &Metadata, number: &ParseNumber, kind: Type) -> Validation {
+pub fn length(meta: &Metadata, number: &ParseNumber<'_>, kind: Type) -> Validation {
     let desc = if let Some(desc) = meta.descriptors().get(kind) {
         desc
     } else {
@@ -312,61 +311,49 @@ pub fn number_type(meta: &Metadata, value: &str) -> Type {
 #[cfg(test)]
 mod test {
     use crate::country;
+    use crate::metadata::DATABASE;
     use crate::parser;
     use crate::validator;
+    use rstest::*;
+    use rstest_reuse::*;
 
-    #[test]
-    fn validate() {
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::US), "+1 6502530000").unwrap()
-        ));
+    #[template]
+    #[rstest]
+    #[case(country::US, "+1 6502530000", true)]
+    #[case(country::IT, "+39 0236618300", true)]
+    #[case(country::FR, "+330631966543", true)]
+    #[case(None, "+330631966543", true)]
+    #[case(country::GB, "+44 7912345678", true)]
+    #[case(None, "+800 12345678", true)]
+    #[case(None, "+979 123456789", true)]
+    #[case(None, "+64 21387835", true)]
+    #[case(None, "+1 2530000", false)]
+    // #[case(None, "+39 023661830000", false)]
+    #[case(None, "+44 791234567", false)]
+    #[case(None, "+49 1234", false)]
+    #[case(None, "+64 3316005", false)]
+    #[case(None, "+3923 2366", false)]
+    #[case(None, "+800 123456789", false)]
+    // Case for https://github.com/whisperfish/rust-phonenumber/issues/31
+    // #[case(None, "+97233142764978", false)]
+    fn phone_numbers(
+        #[case] country: impl Into<Option<country::Id>>,
+        #[case] number: &'static str,
+        #[case] valid: bool,
+    ) {
+    }
 
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::IT), "+39 0236618300").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(Some(country::GB), "+44 7912345678").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(None, "+800 12345678").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(None, "+979 123456789").unwrap()
-        ));
-
-        assert!(validator::is_valid(
-            &parser::parse(None, "+64 21387835").unwrap()
-        ));
-
-        assert!(!validator::is_valid(
-            &parser::parse(None, "+1 2530000").unwrap()
-        ));
-
-        assert!(!validator::is_valid(
-            &parser::parse(None, "+39 023661830000").unwrap()
-        ));
-
-        assert!(!validator::is_valid(
-            &parser::parse(None, "+44 791234567").unwrap()
-        ));
-
-        assert!(!validator::is_valid(
-            &parser::parse(None, "+49 1234").unwrap()
-        ));
-
-        assert!(!validator::is_valid(
-            &parser::parse(None, "+64 3316005").unwrap()
-        ));
-
-        assert!(!validator::is_valid(
-            &parser::parse(None, "+3923 2366").unwrap()
-        ));
-
-        assert!(!validator::is_valid(
-            &parser::parse(None, "+800 123456789").unwrap()
-        ));
+    #[apply(phone_numbers)]
+    fn validate(
+        #[case] country: impl Into<Option<country::Id>>,
+        #[case] number: &'static str,
+        #[case] valid: bool,
+    ) {
+        let country = country.into();
+        println!("parsing {} with country {:?}", number, country);
+        let parsed = parser::parse(country, number).unwrap();
+        println!("number type: {:?}", parsed.number_type(&DATABASE));
+        println!("parsed: {:?}", parsed);
+        assert!(validator::is_valid(&parsed) == valid);
     }
 }

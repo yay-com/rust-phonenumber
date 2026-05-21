@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::parser::helper::*;
 use fnv::FnvHashMap;
 use nom::{
-    self,
     bytes::complete::*,
     character::complete::*,
     combinator::*,
@@ -23,9 +23,12 @@ use nom::{
     AsChar, IResult,
 };
 
-use crate::parser::helper::*;
+pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
+    // Per RFC3966, spaces are not allowed as separators.
+    if i.contains(' ') {
+        return Err(nom::Err::Error(make_error(i, ErrorKind::Tag)));
+    }
 
-pub fn phone_number(i: &str) -> IResult<&str, Number> {
     parse! { i =>
         opt(tag_no_case("Tel:"));
         let prefix = opt(prefix);
@@ -44,7 +47,7 @@ pub fn phone_number(i: &str) -> IResult<&str, Number> {
                     params
                         .as_ref()
                         .and_then(|m| m.get("phone-context"))
-                        .map(|&s| if s.as_bytes()[0] == b'+' { &s[1..] } else { s })
+                        .map(|&s| s.strip_prefix('+').unwrap_or(s))
                 })
                 .map(|cs| cs.into()),
 
@@ -164,5 +167,11 @@ mod test {
                 ..Default::default()
             }
         );
+    }
+
+    #[test]
+    fn advisory_1() {
+        // Just make sure this does not panic.
+        drop(rfc3966::phone_number(".;phone-context="));
     }
 }

@@ -1,11 +1,12 @@
 # phonenumber
 
-![CI Build](https://github.com/whisperfish/presage/workflows/Build/badge.svg)
+![CI Build](https://github.com/whisperfish/rust-phonenumber/workflows/Build/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/phonenumber.svg)](https://crates.io/crates/phonenumber)
 [![phonenumber](https://docs.rs/phonenumber/badge.svg)](https://docs.rs/phonenumber)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Rust version of [libphonenumber](https://github.com/googlei18n/libphonenumber).
+We currently require 1.76.0 as minimum supported Rust version (MSRV).
 
 ## Usage
 
@@ -20,8 +21,6 @@ phonenumber = "0.3"
 The following example parses, validates and formats the given phone number.
 
 ```rust,no_run
-extern crate phonenumber;
-
 use phonenumber::Mode;
 use std::env;
 

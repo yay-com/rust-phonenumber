@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eu
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd
 
-GIT_REF=95dd52a6176b881a14bcad96bce279debf6871f3
+GIT_REF=v9.0.21
 TMP_CLONE_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_CLONE_DIR"' EXIT
 

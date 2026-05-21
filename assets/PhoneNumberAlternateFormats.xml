@@ -188,6 +188,7 @@
             )6|
             51|
             6(?:
+              485|
               5[0-3579]|
               [6-9]
             )|
@@ -208,6 +209,7 @@
             )6|
             51|
             6(?:
+              485|
               5[0-3579]|
               [6-9]
             )|
@@ -228,6 +230,7 @@
             )6|
             51|
             6(?:
+              485|
               5[0-3579]|
               [6-9]
             )|
@@ -250,7 +253,11 @@
             4[2378]|
             5[2-6]|
             6(?:
-              [124]|
+              [12]|
+              4(?:
+                [135-7]|
+                8[34]
+              )|
               5[468]
             )|
             7(?:
@@ -2318,7 +2325,7 @@
           <leadingDigits>
             [5-7]|
             80[367]|
-            90[12]|
+            90[1289]|
             [89][1-8]
           </leadingDigits>
           <format>$1 $2 $3</format>
@@ -2327,7 +2334,7 @@
         <numberFormat pattern="(\d{2})(\d{3})(\d{2})(\d{2})">
           <leadingDigits>
             9(?:
-              0[12]|
+              0[1289]|
               [1-8]
             )
           </leadingDigits>
@@ -2510,7 +2517,10 @@
           <format>$1 $2 $3 $4</format>
         </numberFormat>
         <numberFormat pattern="(\d{2})(\d{2})(\d{4})">
-          <leadingDigits>[2-69]</leadingDigits>
+          <leadingDigits>
+            [2-69]|
+            7[67]
+          </leadingDigits>
           <format>$1 $2 $3</format>
         </numberFormat>
         <numberFormat pattern="(\d{2})(\d{3})(\d{4})">
@@ -2591,6 +2601,7 @@
              been seen online. Some common ones are listed below. -->
         <numberFormat pattern="(\d{2})(\d{2})(\d{6})">
           <leadingDigits>
+            160[01]|
             6(?:
               [09]|
               2(?:
@@ -2691,6 +2702,7 @@
         </numberFormat>
         <numberFormat pattern="(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})">
           <leadingDigits>
+            160[01]|
             6(?:
               [09]|
               2(?:
@@ -3498,7 +3510,7 @@
       <availableFormats>
         <!-- Alternate mobile format -->
         <numberFormat pattern="(\d{3})(\d{3})(\d{3})">
-          <leadingDigits>[69]</leadingDigits>
+          <leadingDigits>6</leadingDigits>
           <format>$1 $2 $3</format>
         </numberFormat>
         <!-- Alternate format for big cities. -->

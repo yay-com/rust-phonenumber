@@ -3,17 +3,6 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
-extern crate quick_xml as xml;
-extern crate regex;
-extern crate thiserror;
-
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate bincode;
-
-use bincode::Options;
-
 #[path = "src/metadata/loader.rs"]
 mod loader;
 
@@ -21,18 +10,17 @@ mod loader;
 mod error;
 
 fn main() {
+    let pnm_path = "assets/PhoneNumberMetadata.xml";
     let metadata = loader::load(BufReader::new(
-        File::open("assets/PhoneNumberMetadata.xml").expect("could not open metadata file"),
+        File::open(pnm_path).expect("could not open metadata file"),
     ))
     .expect("failed to load metadata");
+    println!("cargo:rerun-if-changed={pnm_path}");
 
     let mut out = BufWriter::new(
         File::create(Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
             .expect("could not create database file"),
     );
 
-    bincode::options()
-        .with_varint_encoding()
-        .serialize_into(&mut out, &metadata)
-        .expect("failed to serialize database");
+    postcard::to_io(&metadata, &mut out).expect("failed to serialize database");
 }

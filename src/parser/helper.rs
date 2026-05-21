@@ -12,25 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nom::{
-    self,
-    character::complete::*,
-    combinator::*,
-    error::{make_error, ErrorKind},
-    multi::*,
-    AsChar, IResult,
-};
-use std::borrow::Cow;
-
-use fnv::FnvHashMap;
-use regex_cache::CachedRegex;
-
 use crate::consts;
 use crate::country;
 use crate::error;
 use crate::metadata::{Database, Metadata};
 use crate::phone_number::Type;
 use crate::validator;
+use fnv::FnvHashMap;
+use nom::{
+    character::complete::*,
+    combinator::*,
+    error::{make_error, ErrorKind},
+    multi::*,
+    AsChar, IResult,
+};
+use regex_cache::CachedRegex;
+use std::borrow::Cow;
 
 macro_rules! parse {
 	($input:ident => ) => ();
@@ -157,8 +154,8 @@ pub fn country_code<'a>(
             }
 
             // If the prefix was already extracted, check it is valid.
-            if number.prefix.is_some() {
-                let prefix = number.prefix.as_ref().unwrap().parse()?;
+            if let Some(prefix_ref) = number.prefix.as_ref() {
+                let prefix = prefix_ref.parse()?;
 
                 if database.by_code(&prefix).is_none() {
                     return Err(error::Parse::InvalidCountryCode);
@@ -370,7 +367,7 @@ pub fn normalize<'a>(mut number: Number<'a>, mappings: &FnvHashMap<char, char>) 
     number
 }
 
-pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
+pub fn trim(value: Cow<'_, str>, start: usize) -> Cow<'_, str> {
     match value {
         Cow::Borrowed(value) => Cow::Borrowed(&value[start..]),
 
@@ -384,10 +381,6 @@ pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
 #[allow(clippy::wrong_self_convention)]
 pub trait AsCharExt {
     fn is_wide_digit(self) -> bool;
-    fn is_punctuation(self) -> bool;
-    fn is_plus(self) -> bool;
-    fn is_start(self) -> bool;
-    fn is_valid(self) -> bool;
 
     fn as_dec_digit(self) -> Option<char>;
 }
@@ -395,27 +388,6 @@ pub trait AsCharExt {
 impl<T: AsChar> AsCharExt for T {
     fn is_wide_digit(self) -> bool {
         self.as_char().is_ascii_digit()
-    }
-
-    fn is_punctuation(self) -> bool {
-        let ch = self.as_char();
-        "-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}[]/~\u{2053}\u{223C}\u{FF5E}"
-			.chars().any(|c| c == ch)
-    }
-
-    fn is_plus(self) -> bool {
-        let ch = self.as_char();
-        ch == '+' || ch == '\u{FF0B}'
-    }
-
-    fn is_start(self) -> bool {
-        let ch = self.as_char();
-        ch.is_wide_digit() || ch.is_dec_digit() || ch.is_plus()
-    }
-
-    fn is_valid(self) -> bool {
-        let ch = self.as_char();
-        ch.is_start() || ch.is_alpha() || ch.is_punctuation()
     }
 
     fn as_dec_digit(self) -> Option<char> {
@@ -463,10 +435,6 @@ impl<T: AsChar> AsCharExt for T {
 
 #[cfg(test)]
 mod test {
-    use regex_cache::CachedRegex;
-
-    use crate::consts;
-    use crate::country;
     use crate::metadata::DATABASE;
     use crate::parser::helper;
     use crate::parser::helper::*;

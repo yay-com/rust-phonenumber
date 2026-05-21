@@ -170,6 +170,7 @@
 3366|Bouygues
 3367|Orange France
 3368|Orange France
+33695|Free Mobile
 33698|Bouygues
 33699|Bouygues
 337500|Euroinformation Telecom
@@ -194,8 +195,8 @@
 3375075|Alphalink
 3375076|Globalstar Europe
 3375077|Globalstar Europe
-3375078|China Telecom (France) Limited
-3375079|China Telecom (France) Limited
+3375078|Bouygues
+3375079|Bouygues
 337508|SFR
 337509|SFR
 33751|Lycamobile
@@ -228,6 +229,7 @@
 3375430|TDF
 3375431|Legos
 3375432|Euroinformation Telecom
+3375433|SFR
 337544|Lebara France Limited
 337545|Lebara France Limited
 337546|Mobiquithings
@@ -265,6 +267,7 @@
 3375634|Euroinformation Telecom
 3375644|SFR
 3375645|SFR
+3375648|Bouygues
 337565|Transatel
 337566|Transatel
 337567|Transatel
@@ -278,7 +281,15 @@
 3375705|Mobiweb telecom limited
 3375706|Nordnet
 3375707|Keyyo
+3375708|SFR
+3375709|SFR
+3375710|SFR
+3375711|SFR
+3375712|SFR
+3375714|SFR
+3375715|AIF
 3375717|Keyyo
+3375719|Orange France
 337572|Mobiquithings
 337573|Mobiquithings
 337574|Coriolis Telecom
@@ -287,7 +298,10 @@
 3375758|Euroinformation Telecom
 3375759|Twilio Ireland Limited
 3375760|Twilio Ireland Limited
+3375761|SFR
 3375763|Euroinformation Telecom
+3375764|Bouygues
+3375765|Bouygues
 3375767|Euroinformation Telecom
 3375770|SFR
 3375771|SFR
@@ -295,6 +309,7 @@
 3375773|SFR
 3375774|SFR
 3375777|Euroinformation Telecom
+3375778|SFR
 3375779|Halys
 3375786|Orange France
 3375787|Euroinformation Telecom
