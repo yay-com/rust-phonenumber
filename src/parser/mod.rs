@@ -62,7 +62,11 @@ pub fn parse_with<S: AsRef<str>>(
     // rather than the hint — this fixes mismatched-hint international parsing where, e.g.,
     // parse(Some(GB), "+390635511397") should resolve to IT metadata, not GB.
     let meta = if let Some(_country) = &country {
-        let code = number.prefix.clone().map(|p| p.parse::<u16>()).unwrap_or(Ok(0))?;
+        let code = number
+            .prefix
+            .clone()
+            .map(|p| p.parse::<u16>())
+            .unwrap_or(Ok(0))?;
         database.by_code(&code).and_then(|m| m.into_iter().next())
     } else {
         let code = country::Code {
