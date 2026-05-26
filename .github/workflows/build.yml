@@ -95,7 +95,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: lcov.info
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   rustfmt:
     name: rustfmt
@@ -106,7 +106,7 @@ jobs:
 
       - name: Setup Rust toolchain
         run: rustup install stable
-      
+
       - name: Check code format
         uses: actions-rs/cargo@v1
         with:
@@ -119,10 +119,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      
+
       - name: Setup Rust toolchain
         run: rustup install stable
-      
+
       - name: Setup CI cache
         uses: Swatinem/rust-cache@v2
 
@@ -130,4 +130,3 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-
