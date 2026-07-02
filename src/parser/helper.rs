@@ -376,6 +376,7 @@ pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
 }
 
 #[allow(clippy::wrong_self_convention)]
+#[allow(dead_code)] // `is_punctuation`/`is_plus`/`is_start`/`is_valid` mirror libphonenumber but are currently unused
 pub trait AsCharExt {
     fn is_wide_digit(self) -> bool;
     fn is_punctuation(self) -> bool;

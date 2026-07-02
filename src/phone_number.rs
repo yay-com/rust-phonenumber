@@ -155,7 +155,7 @@ impl fmt::Display for PhoneNumber {
 
 impl PhoneNumber {
     /// Get information about the country for the phone number.
-    pub fn country(&self) -> Country {
+    pub fn country(&self) -> Country<'_> {
         Country(self)
     }
 
