@@ -49,6 +49,9 @@ pub enum Metadata {
 
 /// Parsing errors.
 #[derive(Error, Clone, Debug)]
+// The whole enum is unused when this module is compiled as part of the build
+// script; it is only exercised by the library.
+#[allow(dead_code)]
 pub enum Parse {
     /// This generally indicates the string passed in had less than 3 digits in
     /// it.

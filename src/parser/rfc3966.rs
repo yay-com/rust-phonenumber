@@ -25,7 +25,7 @@ use nom::{
 
 use crate::parser::helper::*;
 
-pub fn phone_number(i: &str) -> IResult<&str, Number> {
+pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
     parse! { i =>
         opt(tag_no_case("Tel:"));
         let prefix = opt(prefix);
